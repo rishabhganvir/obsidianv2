@@ -1,0 +1,38 @@
+name: Build Android APK
+
+'on':
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install app
+        run: npm install
+
+      - name: Make Android app
+        run: npx expo prebuild --platform android --no-install --clean
+
+      - name: Build real APK
+        working-directory: android
+        run: ./gradlew assembleRelease
+
+      - name: Save APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: obsidian-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
